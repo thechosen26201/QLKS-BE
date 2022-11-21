@@ -16,7 +16,7 @@ namespace QLKS.CNTT1.nnkhanh.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, type: typeof(PagingData<Room>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest)]
         [SwaggerResponse(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetPaging([FromQuery] Guid? hotelID, [FromQuery] int pageSize = 10, [FromQuery] int pageNumber = 1)
+        public IActionResult GetPaging([FromQuery] string? keyword, [FromQuery] Guid? hotelID, [FromQuery] int pageSize = 10, [FromQuery] int pageNumber = 1)
         {
             try
             {
@@ -33,21 +33,35 @@ namespace QLKS.CNTT1.nnkhanh.Controllers
                     parameters.Add("v_Limit", pageSize);
                     parameters.Add("v_Sort", "ModifiedDate DESC");
 
-                    //var orConditions = new List<string>();
+                    var orConditions = new List<string>();
                     //var andConditions = new List<string>();
                     var conditionString = new List<string>();
                     string whereClause = "";
 
+                    if(keyword != null)
+                    {
+                        orConditions.Add($"h.HotelName LIKE '%{keyword}%'");
+                        orConditions.Add($"h.HotelAddress LIKE '%{keyword}%'");
+                    }
+
                     if (hotelID != null)
                     {
-                        conditionString.Add($"HotelID = '{hotelID}'");
+                        conditionString.Add($"h.HotelID = '{hotelID}'");
                     }
 
                     if (conditionString.Count > 0)
                     {
-                        whereClause = $"({string.Join(" OR ", conditionString)})";
+                        whereClause = $"({string.Join("", conditionString)})";
                     }
-
+                    if(orConditions.Count > 0)
+                    {
+                        if(whereClause.Length > 0)
+                        {
+                            whereClause += $" AND {string.Join(" OR ", orConditions)}";
+                        }
+                        whereClause += $" {string.Join(" OR ", orConditions)}";
+                    }
+                    
                     parameters.Add("v_Where", whereClause);
 
                     // Thực hiện gọi vào DB để chạy stored procedure với tham số đầu vào ở trên
