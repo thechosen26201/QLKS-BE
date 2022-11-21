@@ -61,7 +61,7 @@ namespace QLKS.CNTT1.nnkhanh.Controllers
                         }
                         whereClause += $" {string.Join(" OR ", orConditions)}";
                     }
-                    
+
                     parameters.Add("v_Where", whereClause);
 
                     // Thực hiện gọi vào DB để chạy stored procedure với tham số đầu vào ở trên
